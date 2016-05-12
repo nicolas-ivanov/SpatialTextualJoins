@@ -69,13 +69,9 @@ def build_inverted_file(data):
 
 # -----------------------------------------------------------------------------------------------------------------------
 def jaccard_similarity(list1, list2):
-    overlap = 0
-    for word in list1:
-        if word in list2:
-            overlap += 1
-
-    sim = 1.0 * overlap / (len(list1) + len(list2) - overlap)
-    return sim
+    overlap = list(set(list1) & set(list2))
+    join = list(set(list1 + list2))
+    return 1.0 * len(overlap) / len(join)
 
 
 # -----------------------------------------------------------------------------------------------------------------------
