@@ -31,3 +31,16 @@ def prepare_data(path):
 	df.text = df.text.apply(lambda text_list: canonicalize(text_list, ordering))
 
 	return df
+
+
+def get_inverted_file(df):
+	inv = {}
+	for id in df.index.values:
+		text = df.loc[id].text
+		for word in text:
+			if word in inv:
+				inv[word].append(id)
+			else:
+				inv[word] = [id]
+	return inv
+
