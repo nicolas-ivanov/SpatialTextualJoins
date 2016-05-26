@@ -1,12 +1,27 @@
 import cPickle
-from flask import Flask
+import json
+from flask import Flask, render_template, send_from_directory, request
 
 from ppjoin import ppjoin
 
 app = Flask(__name__)
 
-@app.route('/ppjoin', methods=['POST'])
-def exec_ppjoin(theta=0.33):
+@app.route('/', methods=['GET'])
+def home():
+    return app.send_static_file('index.html')
+
+@app.route('/ppjoin', methods=['GET'])
+def exec_ppjoin():
+    theta = request.args.get('theta') or 0.33
+    theta = float(theta)
+
     f = open("data/miami1000.pkl", "rb")
     data = cPickle.load(f)
-    return ppjoin(data, theta)
+
+    res = ppjoin(data, theta).keys()
+
+    return json.dumps([(str(t[0]), str(t[1])) for t in res])
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
