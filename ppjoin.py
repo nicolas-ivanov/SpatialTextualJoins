@@ -3,6 +3,7 @@ from text_filters import jaccard_similarity, pos_filter, suf_filter
 from math import ceil
 from collections import Counter
 import time
+import itertools
 
 # -----------------------------------------------------------------------------------------------------------------------
 def ppjoin(df, inverted_file, theta):
@@ -52,13 +53,13 @@ def ppjoin_group(df, inverted_file, theta, group_dict):
 
         index_pref_len = len(text_x) - int(ceil(2 * theta * len(text_x)/ (theta+1))) + 1
 
-        for pos_x in ppref:
+        for pos_x in range(len(ppref)):
             t = ppref[pos_x]
             for (id_y, pos_y) in term_index[t]:
                 text_y = df.loc[id_y].text
                 if len(text_y) < theta * len(text_x):
                     continue
-                elif (pos_filter(df, id_x, id_y, pos_x,pos_y, theta)) \
+                elif (pos_filter(df, id_x, id_y, pos_x, pos_y, theta)) \
                         & (suf_filter(df, id_x, id_y, pos_x,pos_y, theta)):
                     overlap_x[id_y] += 1
                 else:
@@ -69,6 +70,9 @@ def ppjoin_group(df, inverted_file, theta, group_dict):
 
         for id_gr in group:
             pairs = verify(df, pairs, id_gr, overlap_x, theta)
+
+        for pair in itertools.combinations(group, 2):
+            pairs = verify(df, pairs, pair[0], {pair[1]:len(ppref)}, theta)
 
     return resultJSON(df, pairs)
 
@@ -94,8 +98,8 @@ def resultJSON(df, pairs):
             obj = df.loc[id_]
             json = {
                 "id": id_,
-                "long": obj.lng,
-                "lat": obj.lat,
+                "long": str(obj.lng),
+                "lat": str(obj.lat),
                 "text": obj.raw_text
             }
             cell.append(json)
@@ -112,16 +116,20 @@ if __name__ == "__main__":
     start_time = time.time()
     pairs = ppjoin(df, inverted_file, theta)
     print "Time elapsed:", time.time() - start_time
-    res = pairs.keys()
-    print df.loc[res[0][0]].text
-    print df.loc[res[0][1]].text
-    print 'Total: ', len(res)
+    print pairs[0]
+    print 'Total: ', len(pairs)
+    for pair in pairs:
+        id1 = pair[0]["id"]
+        id2 = pair[1]["id"]
+        print jaccard_similarity(df.loc[id1].text, df.loc[id2].text)
 
     group_dict = group_objects(df, theta)
     start_time = time.time()
     pairs = ppjoin_group(df, inverted_file, theta, group_dict)
     print "Time elapsed:", time.time() - start_time
-    res = pairs.keys()
-    print df.loc[res[0][0]].text
-    print df.loc[res[0][1]].text
-    print 'Total: ', len(res)
+    print pairs[0]
+    print 'Total: ', len(pairs)
+    for pair in pairs:
+        id1 = pair[0]["id"]
+        id2 = pair[1]["id"]
+        print jaccard_similarity(df.loc[id1].text, df.loc[id2].text)
