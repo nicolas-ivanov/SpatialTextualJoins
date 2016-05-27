@@ -4,6 +4,7 @@ from math import ceil
 from collections import Counter
 import time
 import itertools
+import json
 
 # -----------------------------------------------------------------------------------------------------------------------
 def ppjoin(df, inverted_file, theta):
@@ -96,15 +97,15 @@ def resultJSON(df, pairs):
         cell = []
         for id_ in pair:
             obj = df.loc[id_]
-            json = {
+            json_ = {
                 "id": id_,
                 "long": str(obj.lng),
                 "lat": str(obj.lat),
                 "text": obj.raw_text
             }
-            cell.append(json)
+            cell.append(json_)
         result.append(cell)
-    return result
+    return json.dumps(result)
 
 # -----------------------------------------------------------------------------------------------------------------------
 
