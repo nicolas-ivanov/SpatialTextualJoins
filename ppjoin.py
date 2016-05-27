@@ -100,8 +100,8 @@ def resultJSON(df, pairs):
             obj = df.loc[id_]
             json_ = {
                 "id": id_,
-                "long": str(obj.lng),
-                "lat": str(obj.lat),
+                "long": str(obj.lat),
+                "lat": str(obj.lng),
                 "text": obj.raw_text
             }
             cell.append(json_)

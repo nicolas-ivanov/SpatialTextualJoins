@@ -3,6 +3,7 @@ import json
 from flask import Flask, render_template, send_from_directory, request
 
 from data_preprocessing import prepare_data, get_inverted_file
+from ppj_c import ppj_c
 from ppjoin import ppjoin
 
 app = Flask(__name__)
@@ -19,11 +20,12 @@ def exec_ppjoin():
 
     df = prepare_data('data/miami1000.pkl')
     inverted_file = get_inverted_file(df)
-    theta = 0.8
+    theta = 0.5
+    epsilon = 100
 
-    res = ppjoin(df, inverted_file, theta)
+    res = ppj_c(df, theta, epsilon)
 
-    return json.dumps([(str(t[0]), str(t[1])) for t in res])
+    return res
 
 
 if __name__ == "__main__":
