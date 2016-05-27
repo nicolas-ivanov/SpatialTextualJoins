@@ -33,13 +33,7 @@
                     </div>
                 </div>
             </div>
-            <hr>
-            <h3>Tweets ({{ tweetPairs.length }})</h3>
-            <div ng-repeat="tweetPair in tweetPairs" class="row">
-                <div class="col-md-6" ng-repeat="tweet in tweetPair">
-                    <twitter-widget twitter-widget-id="tweet.id"></twitter-widget>
-                </div>
-            </div>
+
             <div class="map">
                 <ng-map center="[40.74, -74.18]" zoom="11">
                     <marker 
@@ -51,6 +45,13 @@
                         position="{{ [tweetPair[1].long, tweetPair[1].lat] }}" 
                         title="{{ tweetPair[1].text }}"></marker>
                 </ng-map>
+            </div>
+
+            <h3>Tweets ({{ tweetPairs.length }})</h3>
+            <div ng-repeat="tweetPair in tweetPairs" class="row">
+                <div class="col-md-6" ng-repeat="tweet in tweetPair">
+                    <twitter-widget twitter-widget-id="tweet.id"></twitter-widget>
+                </div>
             </div>
         </div>
     </div>

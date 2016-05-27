@@ -1,4 +1,9 @@
 
 .container {
     padding-top: 100px;
+    width: 1065px;
+}
+
+.map, h3 {
+    margin-top: 40px;
 }

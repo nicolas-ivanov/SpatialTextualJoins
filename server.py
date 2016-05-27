@@ -13,6 +13,7 @@ def home():
 @app.route('/ppjoin', methods=['GET'])
 def exec_ppjoin():
     theta = request.args.get('theta') or 0.33
+    query = request.args.get('q')   # query from search string comes here
     theta = float(theta)
 
     f = open("data/miami1000.pkl", "rb")
