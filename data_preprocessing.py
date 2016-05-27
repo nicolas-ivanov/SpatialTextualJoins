@@ -52,7 +52,7 @@ def group_objects(df, theta):
     for id in df.index.values:
         text = df.loc[id].text
         probe_pref_len = len(text) - int(ceil(theta * len(text))) + 1
-        ppref = text[:probe_pref_len]
+        ppref = tuple(text[:probe_pref_len])
         if ppref in group_dict:
             group_dict[ppref].append(id)
         else:

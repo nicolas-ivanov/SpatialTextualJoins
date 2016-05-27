@@ -53,8 +53,8 @@ angular
                 })
                 .then(function(response) {
 //                    $scope.tweetPairs = test;
-                     console.log(response);
-                     $scope.tweetPairs = response.data || [];
+//                     console.log(response);
+                     $scope.tweetPairs = response.data;
                 })
                 .catch(function(response) {
                     alert('Something went wrong');
