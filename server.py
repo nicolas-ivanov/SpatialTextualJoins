@@ -18,7 +18,7 @@ def home():
 @app.route('/ppjoin', methods=['GET'])
 def exec_ppjoin():
     def parse_query(query):
-        pattern = re.compile('-sim (0\.\d+) -dist (\d+) (.*)')
+        pattern = re.compile('-sim (0\.\d+) -dist (\d+)(.*)')
         m = pattern.match(query)
 
         if m:
@@ -35,10 +35,11 @@ def exec_ppjoin():
     inverted_file = get_inverted_file(df)
 
     if query:
-        epsilon, theta, text = parse_query(query)
+        theta, epsilon, text = parse_query(query)
 
         if not theta:
             theta = 0.1
+            epsilon = 100
 
         if text:
             res = stTextSearch(df, text, theta)
