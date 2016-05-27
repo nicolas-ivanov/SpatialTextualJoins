@@ -1,5 +1,6 @@
 from data_preprocessing import prepare_data, get_inverted_file, group_objects
 from text_filters import jaccard_similarity, pos_filter, suf_filter
+from space_utils import find_neighbors
 from math import ceil
 from collections import Counter
 from geopy.distance import vincenty
@@ -10,7 +11,7 @@ def ppj_c(df, theta, epsilon):
 
     pairs = {}
 
-    grid_dict = construct_grid(df, epsilon)
+    grid_dict, grid_cols = construct_grid(df, epsilon)
 
     for cell in grid_dict:
         neighbor_cells = find_neighbors(cell, grid_cols)
