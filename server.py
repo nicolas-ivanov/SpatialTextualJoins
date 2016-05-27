@@ -2,6 +2,7 @@ import cPickle
 import json
 from flask import Flask, render_template, send_from_directory, request
 
+from data_preprocessing import prepare_data, get_inverted_file
 from ppjoin import ppjoin
 
 app = Flask(__name__)
@@ -12,14 +13,15 @@ def home():
 
 @app.route('/ppjoin', methods=['GET'])
 def exec_ppjoin():
-    theta = request.args.get('theta') or 0.33
+    # theta = request.args.get('theta') or 0.33
+    # theta = float(theta)
     query = request.args.get('q')   # query from search string comes here
-    theta = float(theta)
 
-    f = open("data/miami1000.pkl", "rb")
-    data = cPickle.load(f)
+    df = prepare_data('data/miami1000.pkl')
+    inverted_file = get_inverted_file(df)
+    theta = 0.8
 
-    res = ppjoin(data, theta).keys()
+    res = ppjoin(df, inverted_file, theta)
 
     return json.dumps([(str(t[0]), str(t[1])) for t in res])
 

@@ -52,8 +52,9 @@ angular
                     params: params
                 })
                 .then(function(response) {
-                    $scope.tweetPairs = test;
-                    // $scope.tweetPairs = response.data || [];
+//                    $scope.tweetPairs = test;
+                     console.log(response);
+                     $scope.tweetPairs = response.data || [];
                 })
                 .catch(function(response) {
                     alert('Something went wrong');
