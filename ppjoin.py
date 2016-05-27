@@ -33,8 +33,8 @@ def ppjoin(df, inverted_file, theta):
             if pos_x <= index_pref_len:
                 term_index[t].append((id_x, pos_x))
         pairs = verify(df, pairs, id_x, overlap_x, theta)
-        
-    return pairs
+
+    return resultJSON(df, pairs)
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ def ppjoin_group(df, inverted_file, theta, group_dict):
         for id_gr in group:
             pairs = verify(df, pairs, id_gr, overlap_x, theta)
 
-    return pairs
+    return resultJSON(df, pairs)
 
 
 # Supporting methods
