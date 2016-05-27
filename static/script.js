@@ -1,9 +1,10 @@
 angular
     .module('app', [
         'ngSanitize',
-        'ngtweet'
+        'ngtweet',
+        'ngMap'
     ])
-    .controller('MainCtrl', function($http, $scope) {
+    .controller('MainCtrl', function($http, $scope, NgMap) {
         var test = [
             '617749885933232128', '617749885933232128'
         ];
