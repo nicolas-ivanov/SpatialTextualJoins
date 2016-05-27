@@ -11,7 +11,8 @@ def prepare_data(path):
     with open(path, 'rb') as file:
         data = cPickle.load(file)
     # prepare index
-    ids = [str(row['_id']) for row in data]  # text ids
+    #ids = [str(row['_id']) for row in data]  # text ids
+    ids = [str(row['payload']['id']) for row in data]  # text ids
     # prepare text
     raw_text = [row['payload']['text'] for row in data]  # list of raw text data
     # prepare geo
