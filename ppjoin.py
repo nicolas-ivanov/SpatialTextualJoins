@@ -1,4 +1,4 @@
-from data_preprocessing import prepare_data, get_inverted_file
+from data_preprocessing import prepare_data, get_inverted_file, group_objects
 from text_filters import jaccard_similarity, pos_filter, suf_filter
 from math import ceil
 from collections import Counter
@@ -37,6 +37,43 @@ def ppjoin(df, inverted_file, theta):
     return pairs
 
 
+# -----------------------------------------------------------------------------------------------------------------------
+def ppjoin_group(df, inverted_file, theta, group_dict):
+
+    pairs = {}
+    term_index = {t:[] for t in inverted_file.keys()}
+
+    for ppref in group_dict:
+        group = group_dict[ppref]
+        id_x = group[0]
+        overlap_x = Counter()
+        text_x = df.loc[id_x].text
+        if len(text_x) == 0:
+            continue
+
+        index_pref_len = len(text_x) - int(ceil(2 * theta * len(text_x)/ (theta+1))) + 1
+
+        for pos_x in ppref:
+            t = ppref[pos_x]
+            for (id_y, pos_y) in term_index[t]:
+                text_y = df.loc[id_y].text
+                if len(text_y) < theta * len(text_x):
+                    continue
+                elif (pos_filter(df, id_x, id_y, pos_x,pos_y, theta)) \
+                        & (suf_filter(df, id_x, id_y, pos_x,pos_y, theta)):
+                    overlap_x[id_y] += 1
+                else:
+                    overlap_x[id_y] = -10000
+            if pos_x <= index_pref_len:
+                for id_gr in group:
+                    term_index[t].append((id_gr, pos_x))
+
+        for id_gr in group:
+            pairs = verify(df, pairs, id_gr, overlap_x, theta)
+
+    return pairs
+
+
 # Supporting methods
 def verify(df, pairs, id_x, overlap_x, theta):
     text_x = df.loc[id_x].text
@@ -54,8 +91,19 @@ def verify(df, pairs, id_x, overlap_x, theta):
 if __name__ == "__main__":
     df = prepare_data('data/miami1000.pkl')
     inverted_file = get_inverted_file(df)
+    theta = 0.8
+
     start_time = time.time()
-    pairs = ppjoin(df, inverted_file, 0.8)
+    pairs = ppjoin(df, inverted_file, theta)
+    print "Time elapsed:", time.time() - start_time
+    res = pairs.keys()
+    print df.loc[res[0][0]].text
+    print df.loc[res[0][1]].text
+    print 'Total: ', len(res)
+
+    group_dict = group_objects(df, theta)
+    start_time = time.time()
+    pairs = ppjoin_group(df, inverted_file, theta, group_dict)
     print "Time elapsed:", time.time() - start_time
     res = pairs.keys()
     print df.loc[res[0][0]].text
