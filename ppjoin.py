@@ -33,7 +33,7 @@ def ppjoin(df, inverted_file, theta):
             if pos_x <= index_pref_len:
                 term_index[t].append((id_x, pos_x))
         pairs = verify(df, pairs, id_x, overlap_x, theta)
-
+        
     return pairs
 
 
@@ -85,6 +85,23 @@ def verify(df, pairs, id_x, overlap_x, theta):
         if sim >= theta:
             pairs[(id_x, id_y)] = 0
     return pairs
+
+def resultJSON(df, pairs):
+    pairs = pairs.keys()
+    result = []
+    for pair in pairs:
+        cell = []
+        for id_ in pair:
+            obj = df.loc[id_]
+            json = {
+                "id": id_,
+                "long": obj.lng,
+                "lat": obj.lat,
+                "text": obj.raw_text
+            }
+            cell.append(json)
+        result.append(cell)
+    return result
 
 # -----------------------------------------------------------------------------------------------------------------------
 

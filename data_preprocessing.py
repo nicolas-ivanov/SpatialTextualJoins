@@ -20,6 +20,7 @@ def prepare_data(path):
     lng = [c[1] for c in coordinates]
     # create df
     df = pd.DataFrame({
+        'raw_text': raw_text,
         'text': raw_text,
         'lat': lat,
         'lng': lng},
