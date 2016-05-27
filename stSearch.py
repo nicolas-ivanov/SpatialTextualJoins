@@ -9,9 +9,7 @@ def stTextSearch(df, text, theta):
     d = d.loc[d].index.values
     n = d.shape[0]
     pairs = []
-    for i in xrange(n / 2):
-        pair = (d[i], d[i+1])
+    for i in xrange(n):
+        pair = (d[i],)      # build a dummy pair
         pairs.append(pair)
-    if n % 2:
-        pairs.append((d[-1],))
     return resultJSON(df, pairs)
