@@ -2,6 +2,11 @@ import nltk
 import numpy as np
 from collections import Counter
 
+# This class provides general methods 
+# for text preprocessing
+#
+#
+
 def preprocess_text(text, stemmer=nltk.PorterStemmer()):
     stemmed_list = []
     words = text.split()

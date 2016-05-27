@@ -1,26 +1,18 @@
-import cPickle
-import nltk
-from text_processing import build_inverted_file, get_ordering, canonicalize, pos_filter, suf_filter, verify, jaccard_similarity
+from data_preprocessing import prepare_data, get_inverted_file, group_objects
+from text_filters import jaccard_similarity, pos_filter, suf_filter
 from math import ceil
 from collections import Counter
+import time
 
 # -----------------------------------------------------------------------------------------------------------------------
-def ppjoin(data, theta):
+def ppjoin(df, inverted_file, theta):
 
-    inv_index, id_dict = build_inverted_file(data)
-    ordering = get_ordering(inv_index)
     pairs = {}
-
-    term_index = {}
-    for term in inv_index.keys():
-        term_index[term] = []
-
-
-    for id_x in id_dict.keys():
+    term_index = {t:[] for t in inverted_file.keys()}
+    
+    for id_x in df.index.values:
         overlap_x = Counter()
-
-        # canonicalized list of words
-        text_x = canonicalize(id_dict[id_x], ordering)
+        text_x = df.loc[id_x].text
         if len(text_x) == 0:
             continue
 
@@ -29,34 +21,107 @@ def ppjoin(data, theta):
 
         for pos_x in range(probe_pref_len):
             t = text_x[pos_x]
-
             for (id_y, pos_y) in term_index[t]:
-                text_y = canonicalize(id_dict[id_y], ordering)
+                text_y = df.loc[id_y].text
                 if len(text_y) < theta * len(text_x):
                     continue
-                elif (pos_filter(id_x, pos_x, id_y, pos_y, id_dict, ordering, theta)) \
-                        & (suf_filter(id_x, pos_x, id_y, pos_y, id_dict, ordering, theta)):
+                elif (pos_filter(df, id_x, id_y, pos_x,pos_y, theta)) \
+                        & (suf_filter(df, id_x, id_y, pos_x,pos_y, theta)):
                     overlap_x[id_y] += 1
                 else:
                     overlap_x[id_y] = -10000
-
             if pos_x <= index_pref_len:
                 term_index[t].append((id_x, pos_x))
+        pairs = verify(df, pairs, id_x, overlap_x, theta)
+    return resultJSON(df, pairs)
 
-        pairs = verify(id_x, overlap_x, id_dict, theta, pairs)
 
+# -----------------------------------------------------------------------------------------------------------------------
+def ppjoin_group(df, inverted_file, theta, group_dict):
+
+    pairs = {}
+    term_index = {t:[] for t in inverted_file.keys()}
+
+    for ppref in group_dict:
+        group = group_dict[ppref]
+        id_x = group[0]
+        overlap_x = Counter()
+        text_x = df.loc[id_x].text
+        if len(text_x) == 0:
+            continue
+
+        index_pref_len = len(text_x) - int(ceil(2 * theta * len(text_x)/ (theta+1))) + 1
+
+        for pos_x in ppref:
+            t = ppref[pos_x]
+            for (id_y, pos_y) in term_index[t]:
+                text_y = df.loc[id_y].text
+                if len(text_y) < theta * len(text_x):
+                    continue
+                elif (pos_filter(df, id_x, id_y, pos_x,pos_y, theta)) \
+                        & (suf_filter(df, id_x, id_y, pos_x,pos_y, theta)):
+                    overlap_x[id_y] += 1
+                else:
+                    overlap_x[id_y] = -10000
+            if pos_x <= index_pref_len:
+                for id_gr in group:
+                    term_index[t].append((id_gr, pos_x))
+
+        for id_gr in group:
+            pairs = verify(df, pairs, id_gr, overlap_x, theta)
+
+    return resultJSON(df, pairs)
+
+
+# Supporting methods
+def verify(df, pairs, id_x, overlap_x, theta):
+    text_x = df.loc[id_x].text
+    for id_y in overlap_x:
+        if overlap_x[id_y] <= 0:
+            continue
+        text_y = df.loc[str(id_y)].text
+        sim = jaccard_similarity(text_x, text_y)
+        if sim >= theta:
+            pairs[(id_x, id_y)] = 0
     return pairs
 
+def resultJSON(df, pairs):
+    pairs = pairs.keys()
+    result = []
+    for pair in pairs:
+        cell = []
+        for id_ in pair:
+            obj = df.loc[id_]
+            json = {
+                "id": id_,
+                "long": obj.lng,
+                "lat": obj.lat,
+                "text": obj.raw_text
+            }
+            cell.append(json)
+        result.append(cell)
+    return result
 
 # -----------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    f = open("data/miami1000.pkl", "rb")
-    data = cPickle.load(f)
-    inv_index, id_dict = build_inverted_file(data)
-    pairs = ppjoin(data, 0.33)
+    df = prepare_data('data/miami1000.pkl')
+    inverted_file = get_inverted_file(df)
+    theta = 0.8
+
+    start_time = time.time()
+    pairs = ppjoin(df, inverted_file, theta)
+    print "Time elapsed:", time.time() - start_time
     res = pairs.keys()
-    print res
-    print id_dict[res[0][0]]
-    print id_dict[res[0][1]]
-    print jaccard_similarity(id_dict[res[0][0]], id_dict[res[0][1]])
+    print df.loc[res[0][0]].text
+    print df.loc[res[0][1]].text
+    print 'Total: ', len(res)
+
+    group_dict = group_objects(df, theta)
+    start_time = time.time()
+    pairs = ppjoin_group(df, inverted_file, theta, group_dict)
+    print "Time elapsed:", time.time() - start_time
+    res = pairs.keys()
+    print df.loc[res[0][0]].text
+    print df.loc[res[0][1]].text
+    print 'Total: ', len(res)
