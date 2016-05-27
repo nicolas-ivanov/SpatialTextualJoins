@@ -91,7 +91,8 @@ def verify(df, pairs, id_x, overlap_x, theta):
     return pairs
 
 def resultJSON(df, pairs):
-    pairs = pairs.keys()
+    if not isinstance(pairs, list):
+        pairs = pairs.keys()
     result = []
     for pair in pairs:
         cell = []
